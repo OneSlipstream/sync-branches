@@ -16,6 +16,8 @@ async function run() {
       core.getInput("CONTENT_COMPARISON").toLowerCase() === "true";
     const reviewers = JSON.parse(core.getInput("REVIEWERS"));
     const team_reviewers = JSON.parse(core.getInput("TEAM_REVIEWERS"));
+    const tags = JSON.parse(core.getInput("TAGS"));
+    const autoMerge = core.getInput("AUTO_MERGE").toLowerCase() === "true";
 
     console.log(
       `Should a pull request to ${toBranch} from ${fromBranch} be created?`
@@ -67,9 +69,37 @@ async function run() {
           });
         }
 
+        if (tags.length > 0) {
+          octokit.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pullRequest.number,
+            labels: tags,
+          });
+        }
+
         console.log(
-          `Pull request (${pullRequest.number}) successful! You can view it here: ${pullRequest.url}`
+          `Pull request (${pullRequest.number}) created successfully! You can view it here: ${pullRequest.url}`
         );
+
+        if (autoMerge) {
+          try {
+            await octokit.rest.pulls.merge({
+              owner,
+              repo,
+              pull_number: pullRequest.number,
+            });
+
+            console.log(
+              `Pull request (${pullRequest.number}) automatically merged!`
+            );
+          } catch (e) {
+            console.log(
+              `Pull request (${pullRequest.number}) failed to automatically merge.`
+            );
+            return core.setFailed(error.message);
+          }
+        }
 
         core.setOutput("PULL_REQUEST_URL", pullRequest.url.toString());
         core.setOutput("PULL_REQUEST_NUMBER", pullRequest.number.toString());
