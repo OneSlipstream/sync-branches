@@ -92,7 +92,7 @@ async function run() {
 
         if (autoMerge) {
           try {
-            await octokit.pulls.merge({
+            await octokit.rest.pulls.merge({
               owner,
               repo,
               pull_number: pullRequest.number,
