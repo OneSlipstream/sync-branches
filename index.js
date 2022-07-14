@@ -19,8 +19,6 @@ async function run() {
     const tags = JSON.parse(core.getInput("TAGS"));
     const autoMerge = core.getInput("AUTO_MERGE").toLowerCase() === "true";
 
-    console.log(tags);
-
     console.log(
       `Should a pull request to ${toBranch} from ${fromBranch} be created?`
     );
@@ -72,12 +70,6 @@ async function run() {
         }
 
         if (tags.length > 0) {
-          console.log(JSON.stringify({
-            owner,
-            repo,
-            issue_number: pullRequest.number,
-            labels: tags,
-          }))
           octokit.rest.issues.addLabels({
             owner,
             repo,
@@ -87,7 +79,7 @@ async function run() {
         }
 
         console.log(
-          `Pull request (${pullRequest.number}) successful! You can view it here: ${pullRequest.url}`
+          `Pull request (${pullRequest.number}) created successfully! You can view it here: ${pullRequest.url}`
         );
 
         if (autoMerge) {
@@ -97,8 +89,14 @@ async function run() {
               repo,
               pull_number: pullRequest.number,
             });
+
+            console.log(
+              `Pull request (${pullRequest.number}) automatically merged!`
+            );
           } catch (e) {
-            console.error(e);
+            console.log(
+              `Pull request (${pullRequest.number}) failed to automatically merge.`
+            );
             return core.setFailed(error.message);
           }
         }
