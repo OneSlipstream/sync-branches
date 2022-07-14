@@ -297,6 +297,7 @@ async function run() {
     const reviewers = JSON.parse(core.getInput("REVIEWERS"));
     const team_reviewers = JSON.parse(core.getInput("TEAM_REVIEWERS"));
     const tags = JSON.parse(core.getInput("TAGS"));
+    const autoMerge = core.getInput("AUTO_MERGE").toLowerCase() === "true";
 
     console.log(tags);
 
@@ -368,6 +369,19 @@ async function run() {
         console.log(
           `Pull request (${pullRequest.number}) successful! You can view it here: ${pullRequest.url}`
         );
+
+        if (autoMerge) {
+          try {
+            await octokit.pulls.merge({
+              owner: owner,
+              repo: repo,
+              pull_number: pullRequest.number,
+            });
+            return "success";
+          } catch (e) {
+            return core.setFailed(error.message);
+          }
+        }
 
         core.setOutput("PULL_REQUEST_URL", pullRequest.url.toString());
         core.setOutput("PULL_REQUEST_NUMBER", pullRequest.number.toString());
