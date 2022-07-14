@@ -93,12 +93,12 @@ async function run() {
         if (autoMerge) {
           try {
             await octokit.pulls.merge({
-              owner: owner,
-              repo: repo,
+              owner,
+              repo,
               pull_number: pullRequest.number,
             });
-            return "success";
           } catch (e) {
+            console.error(e);
             return core.setFailed(error.message);
           }
         }
