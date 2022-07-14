@@ -296,6 +296,9 @@ async function run() {
       core.getInput("CONTENT_COMPARISON").toLowerCase() === "true";
     const reviewers = JSON.parse(core.getInput("REVIEWERS"));
     const team_reviewers = JSON.parse(core.getInput("TEAM_REVIEWERS"));
+    const tags = JSON.parse(core.getInput("TAGS"));
+
+    console.log(tags);
 
     console.log(
       `Should a pull request to ${toBranch} from ${fromBranch} be created?`
@@ -344,6 +347,21 @@ async function run() {
             pull_number: pullRequest.number,
             reviewers,
             team_reviewers,
+          });
+        }
+
+        if (tags.length > 0) {
+          console.log(JSON.stringify({
+            owner,
+            repo,
+            issue_number: pullRequest.number,
+            labels: tags,
+          }))
+          octokit.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: pullRequest.number,
+            labels: tags,
           });
         }
 
